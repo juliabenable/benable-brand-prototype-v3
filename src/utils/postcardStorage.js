@@ -29,6 +29,14 @@ export function savePostcard(campaignId, creatorHandle, postcard) {
   writeAll(all);
 }
 
+export function getPostcardCount() {
+  return Object.keys(readAll()).length;
+}
+
+export function clearAllPostcards() {
+  localStorage.removeItem(STORAGE_KEY);
+}
+
 const STYLE_PREF_KEY = 'benable.postcards.preferredStyle';
 
 export function getPreferredStyle() {

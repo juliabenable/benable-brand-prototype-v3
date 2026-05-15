@@ -568,6 +568,62 @@
 @keyframes send-cp-9  { 0%, 72% { opacity: 0; transform: translate(0,0) rotate(0); } 77% { opacity: 1; } 100% { opacity: 0; transform: translate(130px,-180px) rotate(300deg); } }
 @keyframes send-cp-10 { 0%, 72% { opacity: 0; transform: translate(0,0) rotate(0); } 77% { opacity: 1; } 100% { opacity: 0; transform: translate(-160px,-50px) rotate(-340deg); } }
 
+/* ---------- Reset demo FAB ----------
+   Demo-only escape hatch. Only renders when there are sent postcards. */
+.reset-thanks-fab {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 100;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(255, 255, 255, 0.96);
+  color: #5d3fd3;
+  border: 1px solid rgba(122, 92, 250, 0.25);
+  border-radius: 999px;
+  padding: 10px 14px;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.12), 0 2px 4px rgba(0, 0, 0, 0.06);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  transition: transform .14s ease, box-shadow .14s ease, background .14s ease;
+}
+.reset-thanks-fab:hover {
+  background: #fff;
+  transform: translateY(-1px);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.18), 0 2px 6px rgba(0, 0, 0, 0.08);
+}
+.reset-thanks-fab:active {
+  transform: translateY(0);
+}
+.reset-thanks-fab__icon {
+  font-size: 16px;
+  line-height: 1;
+}
+.reset-thanks-fab__hint {
+  background: rgba(122, 92, 250, 0.12);
+  color: #7a5cfa;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 2px 6px;
+  border-radius: 999px;
+  margin-left: 4px;
+}
+@media (max-width: 720px) {
+  .reset-thanks-fab {
+    bottom: 16px;
+    right: 16px;
+    padding: 9px 12px;
+    font-size: 12px;
+  }
+}
+
 /* ---------- Responsive ---------- */
 @media (max-width: 720px) {
   .pc-polaroid { width: 240px; height: 320px; }

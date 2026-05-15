@@ -7,7 +7,7 @@ import {
   addCreatorsModalModal,
 } from '../data/capturedHtml.js';
 import SayThanksModal from '../components/SayThanksModal.jsx';
-import { getPostcard } from '../utils/postcardStorage.js';
+import { getPostcard, getPostcardCount, clearAllPostcards } from '../utils/postcardStorage.js';
 
 const BRAND_NAME = 'Pikora';
 
@@ -104,6 +104,13 @@ export default function CampaignDetailPage() {
     setDecorTick((t) => t + 1); // re-decorate cards to show "Thanked" state
   }
 
+  function resetThanks() {
+    clearAllPostcards();
+    setDecorTick((t) => t + 1);
+  }
+
+  const sentCount = getPostcardCount(); // re-reads on every render
+
   return (
     <>
       <div ref={ref} dangerouslySetInnerHTML={{ __html: html }} />
@@ -122,6 +129,19 @@ export default function CampaignDetailPage() {
           onClose={() => setThanksTarget(null)}
           onSent={onSent}
         />
+      )}
+      {sentCount > 0 && !thanksTarget && (
+        <button
+          type="button"
+          className="reset-thanks-fab"
+          onClick={resetThanks}
+          aria-label="Reset all sent postcards (demo only)"
+          title="Reset all sent postcards — demo only"
+        >
+          <span aria-hidden="true" className="reset-thanks-fab__icon">↺</span>
+          Reset {sentCount} sent postcard{sentCount === 1 ? '' : 's'}
+          <span className="reset-thanks-fab__hint">demo</span>
+        </button>
       )}
     </>
   );

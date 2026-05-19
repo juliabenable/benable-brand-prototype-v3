@@ -11,6 +11,7 @@ import {
   getCreatorState,
   getActionedCount,
   clearAllActions,
+  getRelationshipSummary,
 } from '../utils/postcardStorage.js';
 
 const BRAND_NAME = 'Pikora';
@@ -35,12 +36,16 @@ export default function CampaignDetailPage() {
     });
   }, [tab, html]);
 
-  // ----- Decorate content-post-cards with a "Thanked" badge -----
+  // ----- Decorate Content tiles ("Thanked" badge) and the Dashboard
+  //       creator list (cross-creator relationship status) -----
   useEffect(() => {
-    if (tab !== 'Content') return;
     const root = ref.current;
     if (!root) return;
-    root.querySelectorAll('.content-post-card').forEach((card) => decorateCard(card, campaignId));
+    if (tab === 'Content') {
+      root.querySelectorAll('.content-post-card').forEach((card) => decorateCard(card, campaignId));
+    } else {
+      root.querySelectorAll('.creator-management-table tbody tr').forEach((tr) => decorateDashboardRow(tr, campaignId));
+    }
   }, [tab, html, campaignId, decorTick, hubTarget]);
 
   // ----- Click delegation -----
@@ -162,6 +167,30 @@ function decorateCard(card, campaignId) {
   badge.innerHTML = `<span class="thanked-badge__check">✓</span> Thanked · ${date}`;
   badge.setAttribute('aria-label', `Postcard sent to ${info.creator.name} on ${date}`);
   card.appendChild(badge);
+}
+
+/* Cross-creator surface: show relationship status on each Dashboard row
+ * whose creator has had any post-campaign action taken. */
+function decorateDashboardRow(tr, campaignId) {
+  tr.querySelector('.relationship-strip')?.remove();
+  const handle = tr.querySelector('.creator-table-person-copy small')?.textContent.trim();
+  if (!handle) return;
+  const s = getRelationshipSummary(campaignId, handle);
+  if (!s.any) return;
+
+  const chips = [];
+  if (s.thanked) chips.push('<span class="rel-chip rel-chip--thanked">♥ Thanked</span>');
+  if (s.paidRights > 0) chips.push(`<span class="rel-chip rel-chip--rights">⊛ Paid rights · ${s.paidRights}</span>`);
+  if (s.shortlisted) chips.push('<span class="rel-chip rel-chip--save">★ Shortlisted</span>');
+  if (s.invitedNext) chips.push('<span class="rel-chip rel-chip--invite">＋ Invited next</span>');
+
+  const noteCell = tr.querySelector('.creator-management-note-col');
+  const host = noteCell || tr.querySelector('td:nth-child(3)') || tr.lastElementChild;
+  if (!host) return;
+  const strip = document.createElement('div');
+  strip.className = 'relationship-strip';
+  strip.innerHTML = chips.join('');
+  host.appendChild(strip);
 }
 
 function extractCard(card) {

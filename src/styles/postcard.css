@@ -769,11 +769,18 @@
 }
 .hub-tab.on { background: #fff; color: #1a1a1a; box-shadow: 0 -2px 0 #7a5cfa inset; }
 .hub-tab__ic { font-size: 16px; }
-.hub-tab__dot {
-  position: absolute; top: 7px; right: 10px;
-  width: 7px; height: 7px; border-radius: 50%;
-  background: #2c7a4a;
+.hub-tab__state {
+  position: absolute; top: 6px; right: 8px;
+  background: #ece6ff;
+  color: #5d3fd3;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: .03em;
+  text-transform: uppercase;
+  padding: 2px 6px;
+  border-radius: 999px;
 }
+.hub-tab.on .hub-tab__state { background: #7a5cfa; color: #fff; }
 .hub-panel {
   flex: 1;
   background: #fff;
@@ -869,6 +876,42 @@
   font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .05em;
   padding: 2px 8px; border-radius: 999px; margin-left: 8px;
 }
+.hub-rights__scope {
+  font-size: 12px; color: #6b7280; line-height: 1.5;
+  background: #faf6ef; border: 1px dashed #e2d8c4;
+  padding: 9px 12px; border-radius: 10px;
+}
+.hub-rights__scope strong { color: #1a1a1a; }
+
+/* Money-moment confirm / receipt */
+.hub-receipt {
+  border: 1px solid #e8e3f7;
+  background: #faf8ff;
+  border-radius: 10px;
+  padding: 12px 14px;
+  margin: 0 0 12px;
+  display: flex; flex-direction: column; gap: 6px;
+}
+.hub-receipt--preview { background: #fff; border-style: dashed; }
+.hub-receipt > div {
+  display: flex; justify-content: space-between; align-items: baseline;
+  font-size: 12px;
+}
+.hub-receipt > div span { color: #8a8a8a; }
+.hub-receipt > div b { color: #1a1a1a; font-weight: 600; }
+.hub-confirm-row { display: flex; gap: 10px; align-items: center; }
+
+/* "Featuring this post" note under the postcard preview */
+.hub-postcard__featuring {
+  margin-top: 10px;
+  font-size: 11px;
+  color: #8a6a82;
+  background: #fdf0f5;
+  border: 1px solid #f4d6e4;
+  border-radius: 999px;
+  padding: 5px 12px;
+  text-align: center;
+}
 
 /* Re-collab panel */
 .hub-recollab { display: flex; flex-direction: column; gap: 14px; }
@@ -886,6 +929,29 @@
   padding: 2px 8px; border-radius: 999px;
 }
 .hub-recollab__card p { margin: 0 0 12px; font-size: 12.5px; color: #5a5a5a; line-height: 1.5; }
+
+/* Cross-creator relationship strip on Dashboard rows */
+.relationship-strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+}
+.rel-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 9px;
+  border-radius: 999px;
+  white-space: nowrap;
+  line-height: 1.4;
+}
+.rel-chip--thanked { background: #fdf0f5; color: #b0648a; border: 1px solid #f4d6e4; }
+.rel-chip--rights  { background: #f4f1ff; color: #5d3fd3; border: 1px solid #d8ccf9; }
+.rel-chip--save    { background: #fff6e6; color: #a8761c; border: 1px solid #f0dcae; }
+.rel-chip--invite  { background: #eef6ff; color: #1f5aa8; border: 1px solid #cfe2f7; }
 
 /* "Thanked" badge on a content tile */
 .thanked-badge {

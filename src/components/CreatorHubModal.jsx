@@ -3,7 +3,9 @@ import { PolaroidPostcard, VintagePostcard } from './Postcards.jsx';
 import {
   getCreatorState,
   savePostcard,
-  setPaidRights,
+  isPaidRights,
+  setPaidRightsForPost,
+  paidRightsCount,
   setShortlisted,
   setInvitedNext,
   getPreferredStyle,
@@ -15,51 +17,53 @@ const MESSAGE_MAX = 140;
 const SIGNOFF_MAX = 40;
 const PAID_RIGHTS_PRICE = '$200';
 
+function postKeyOf(post, idx) {
+  return post?.postUrl || `${post?.platform || 'post'}#${idx}`;
+}
+
 /**
- * Creator hub: clicking a content tile opens this. Left = carousel of all the
- * creator's posts. Right = three focused tabs (Postcard / Rights / Re-collab).
+ * Creator hub. Left = carousel of all the creator's posts.
+ * Right = three focused tabs (Postcard / Rights / Re-collab).
+ * Scope: postcard & re-collab are per-creator; rights are per-POST and
+ * always reflect the post currently shown in the carousel.
  */
 export default function CreatorHubModal({
   campaignId,
-  creator,     // { name, handle, avatarInitial }
-  posts,       // [{ thumbnailUrl, platform, caption, timeAgo, postUrl }]
+  creator,
+  posts,
   brandName,
   onClose,
   onChanged,
 }) {
-  const [tab, setTab] = useState('postcard'); // postcard | rights | recollab
+  const [tab, setTab] = useState('postcard');
   const [idx, setIdx] = useState(0);
   const [sending, setSending] = useState(false);
-  // local mirror of persisted state so the UI updates immediately
+  const [animPostcard, setAnimPostcard] = useState(null);
   const [state, setState] = useState(() => getCreatorState(campaignId, creator.handle));
 
   const post = posts[idx] || posts[0] || {};
+  const pKey = postKeyOf(post, idx);
 
   function refresh() {
     setState(getCreatorState(campaignId, creator.handle));
     onChanged && onChanged();
   }
 
-  // Escape closes (unless mid-send)
   useEffect(() => {
     const h = (e) => { if (e.key === 'Escape' && !sending) onClose(); };
     window.addEventListener('keydown', h);
     return () => window.removeEventListener('keydown', h);
   }, [sending, onClose]);
 
-  // Lock body scroll
   useEffect(() => {
     const prev = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
     return () => { document.body.style.overflow = prev; };
   }, []);
 
-  const onBackdrop = (e) => {
-    if (e.target === e.currentTarget && !sending) onClose();
-  };
+  const onBackdrop = (e) => { if (e.target === e.currentTarget && !sending) onClose(); };
 
   // ---- send animation overlay ----
-  const [animPostcard, setAnimPostcard] = useState(null);
   if (sending && animPostcard) {
     const PC = animPostcard.style === 'polaroid' ? PolaroidPostcard : VintagePostcard;
     return (
@@ -68,9 +72,7 @@ export default function CreatorHubModal({
           <div className="send-anim__envelope">
             <div className="send-anim__envelope-back" />
             <div className="send-anim__card-clip">
-              <div className="send-anim__card">
-                <PC {...animPostcard.props} />
-              </div>
+              <div className="send-anim__card"><PC {...animPostcard.props} /></div>
             </div>
             <div className="send-anim__envelope-front" />
             <div className="send-anim__envelope-flap" />
@@ -83,6 +85,9 @@ export default function CreatorHubModal({
       </div>
     );
   }
+
+  const rightsForThisPost = isPaidRights(campaignId, creator.handle, pKey);
+  const totalPaidPosts = paidRightsCount(campaignId, creator.handle);
 
   return (
     <div className="hub-overlay" role="dialog" aria-label={`Creator hub for ${creator.name}`} onClick={onBackdrop}>
@@ -97,7 +102,7 @@ export default function CreatorHubModal({
         </div>
 
         <div className="hub-body">
-          {/* ---- LEFT: carousel ---- */}
+          {/* LEFT: carousel */}
           <div className="hub-carousel">
             <div
               className="hub-carousel__thumb"
@@ -106,21 +111,13 @@ export default function CreatorHubModal({
               {post.platform && <span className="hub-carousel__platform">{post.platform}</span>}
               {posts.length > 1 && (
                 <div className="hub-carousel__arrows">
-                  <button
-                    aria-label="Previous post"
-                    onClick={() => setIdx((i) => (i - 1 + posts.length) % posts.length)}
-                  >‹</button>
-                  <button
-                    aria-label="Next post"
-                    onClick={() => setIdx((i) => (i + 1) % posts.length)}
-                  >›</button>
+                  <button aria-label="Previous post" onClick={() => setIdx((i) => (i - 1 + posts.length) % posts.length)}>‹</button>
+                  <button aria-label="Next post" onClick={() => setIdx((i) => (i + 1) % posts.length)}>›</button>
                 </div>
               )}
               {posts.length > 1 && (
                 <div className="hub-carousel__dots">
-                  {posts.map((_, i) => (
-                    <span key={i} className={i === idx ? 'on' : ''} />
-                  ))}
+                  {posts.map((_, i) => <span key={i} className={i === idx ? 'on' : ''} />)}
                 </div>
               )}
             </div>
@@ -137,20 +134,22 @@ export default function CreatorHubModal({
             </div>
           </div>
 
-          {/* ---- RIGHT: tabs ---- */}
+          {/* RIGHT: tabs */}
           <div className="hub-right">
             <div className="hub-tabs" role="tablist">
               <button className={`hub-tab ${tab === 'postcard' ? 'on' : ''}`} onClick={() => setTab('postcard')} role="tab" aria-selected={tab === 'postcard'}>
                 <span className="hub-tab__ic" aria-hidden="true">♥</span>Postcard
-                {state.postcard && <span className="hub-tab__dot" aria-label="done" />}
+                {state.postcard && <span className="hub-tab__state">Sent</span>}
               </button>
               <button className={`hub-tab ${tab === 'rights' ? 'on' : ''}`} onClick={() => setTab('rights')} role="tab" aria-selected={tab === 'rights'}>
                 <span className="hub-tab__ic" aria-hidden="true">⊛</span>Rights
-                {state.paidRights && <span className="hub-tab__dot" aria-label="done" />}
+                {totalPaidPosts > 0 && <span className="hub-tab__state">Paid · {totalPaidPosts}</span>}
               </button>
               <button className={`hub-tab ${tab === 'recollab' ? 'on' : ''}`} onClick={() => setTab('recollab')} role="tab" aria-selected={tab === 'recollab'}>
                 <span className="hub-tab__ic" aria-hidden="true">＋</span>Re-collab
-                {(state.shortlisted || state.invitedNext) && <span className="hub-tab__dot" aria-label="done" />}
+                {(state.shortlisted || state.invitedNext) && (
+                  <span className="hub-tab__state">{state.shortlisted && state.invitedNext ? 'Both' : state.shortlisted ? 'Saved' : 'Invited'}</span>
+                )}
               </button>
             </div>
 
@@ -160,6 +159,8 @@ export default function CreatorHubModal({
                   campaignId={campaignId}
                   creator={creator}
                   post={post}
+                  postIndex={idx}
+                  postCount={posts.length}
                   brandName={brandName}
                   existing={state.postcard}
                   onStartSend={(payload) => { setAnimPostcard(payload); setSending(true); }}
@@ -174,9 +175,13 @@ export default function CreatorHubModal({
               )}
               {tab === 'rights' && (
                 <RightsPanel
-                  active={state.paidRights}
+                  post={post}
+                  postIndex={idx}
+                  postCount={posts.length}
                   price={PAID_RIGHTS_PRICE}
-                  onToggle={() => { setPaidRights(campaignId, creator.handle, !state.paidRights); refresh(); }}
+                  active={rightsForThisPost}
+                  onConfirm={() => { setPaidRightsForPost(campaignId, creator.handle, pKey, true); refresh(); }}
+                  onTurnOff={() => { setPaidRightsForPost(campaignId, creator.handle, pKey, false); refresh(); }}
                 />
               )}
               {tab === 'recollab' && (
@@ -197,7 +202,7 @@ export default function CreatorHubModal({
 }
 
 /* ---------------- Postcard panel ---------------- */
-function PostcardPanel({ campaignId, creator, post, brandName, existing, onStartSend, finishSend, animMs }) {
+function PostcardPanel({ campaignId, creator, post, postIndex, postCount, brandName, existing, onStartSend, finishSend, animMs }) {
   const viewOnly = !!existing;
   const [style, setStyle] = useState(viewOnly ? existing.style : getPreferredStyle());
   const [message, setMessage] = useState(
@@ -210,25 +215,28 @@ function PostcardPanel({ campaignId, creator, post, brandName, existing, onStart
   const props = {
     thumbnailUrl: post?.thumbnailUrl,
     platform: post?.platform,
-    brandName,
-    message,
-    signoff,
+    brandName, message, signoff,
     date: viewOnly ? new Date(existing.sentAt) : new Date(),
   };
   const PC = style === 'polaroid' ? PolaroidPostcard : VintagePostcard;
-
   const changeStyle = (s) => { setStyle(s); if (!viewOnly) setPreferredStyle(s); };
 
   const send = () => {
-    const sentAt = new Date().toISOString();
-    const record = { style, message, signoff, sentAt };
+    const record = { style, message, signoff, sentAt: new Date().toISOString() };
     onStartSend({ style, props });
     setTimeout(() => finishSend(record), animMs);
   };
 
   return (
     <div className="hub-postcard">
-      <div className="hub-postcard__preview"><PC {...props} /></div>
+      <div className="hub-postcard__preview">
+        <PC {...props} />
+        {style === 'polaroid' && postCount > 1 && !viewOnly && (
+          <div className="hub-postcard__featuring">
+            Featuring the post you're viewing — {postIndex + 1} of {postCount}
+          </div>
+        )}
+      </div>
 
       {viewOnly ? (
         <div className="hub-postcard__sent">
@@ -260,15 +268,22 @@ function PostcardPanel({ campaignId, creator, post, brandName, existing, onStart
   );
 }
 
-/* ---------------- Rights panel ---------------- */
-function RightsPanel({ active, price, onToggle }) {
+/* ---------------- Rights panel (per post) ---------------- */
+function RightsPanel({ post, postIndex, postCount, price, active, onConfirm, onTurnOff }) {
+  const [confirming, setConfirming] = useState(false);
+  const postLabel = `${post.platform || 'Post'}${postCount > 1 ? ` · ${postIndex + 1} of ${postCount}` : ''}`;
+
   return (
     <div className="hub-rights">
+      <div className="hub-rights__scope">
+        Rights apply to <strong>this post</strong> — {postLabel}. Flip the carousel to license a different one.
+      </div>
+
       <div className="hub-rights__row hub-rights__row--granted">
         <span className="hub-rights__check">✓</span>
         <div>
           <h4>Organic rights</h4>
-          <p>Included with this campaign — share, repost, and embed this content on your own channels, forever.</p>
+          <p>Included with this campaign — share, repost, and embed this post on your own channels, forever.</p>
         </div>
       </div>
 
@@ -276,21 +291,49 @@ function RightsPanel({ active, price, onToggle }) {
         <span className="hub-rights__icon">{active ? '✓' : '＄'}</span>
         <div className="hub-rights__paid-body">
           <h4>Paid rights {active && <span className="hub-rights__tag">Active</span>}</h4>
+
           {active ? (
-            <p>Paid usage is active — run this as an ad on Meta &amp; TikTok for 30 days, all placements. {price} · billed to your account.</p>
+            <>
+              <p>Paid usage is active for this post — runnable as an ad on Meta &amp; TikTok for 30 days, all placements.</p>
+              <div className="hub-receipt">
+                <div><span>Post</span><b>{postLabel}</b></div>
+                <div><span>Platforms</span><b>Meta &amp; TikTok</b></div>
+                <div><span>Window</span><b>30 days, all placements</b></div>
+                <div><span>Charged</span><b>{price}</b></div>
+              </div>
+              <button className="hub-secondary" onClick={onTurnOff}>Turn off paid rights</button>
+            </>
+          ) : confirming ? (
+            <>
+              <p>Confirm paid usage for this post:</p>
+              <div className="hub-receipt hub-receipt--preview">
+                <div><span>Post</span><b>{postLabel}</b></div>
+                <div><span>Platforms</span><b>Meta &amp; TikTok</b></div>
+                <div><span>Window</span><b>30 days, all placements</b></div>
+                <div><span>Total</span><b>{price}</b></div>
+              </div>
+              <div className="hub-confirm-row">
+                <button className="hub-secondary" onClick={() => setConfirming(false)}>Cancel</button>
+                <button className="hub-primary" onClick={() => { setConfirming(false); onConfirm(); }}>
+                  Confirm — {price}
+                </button>
+              </div>
+            </>
           ) : (
-            <p>Unlock paid usage to run this content as an ad on Meta &amp; TikTok — 30 days, all placements.</p>
+            <>
+              <p>Unlock paid usage to run <strong>this post</strong> as an ad on Meta &amp; TikTok — 30 days, all placements.</p>
+              <button className="hub-primary" onClick={() => setConfirming(true)}>
+                Buy paid rights — {price}
+              </button>
+            </>
           )}
-          <button className={active ? 'hub-secondary' : 'hub-primary'} onClick={onToggle}>
-            {active ? 'Turn off paid rights' : `Activate paid rights — ${price}`}
-          </button>
         </div>
       </div>
     </div>
   );
 }
 
-/* ---------------- Re-collab panel ---------------- */
+/* ---------------- Re-collab panel (per creator) ---------------- */
 function ReCollabPanel({ creatorName, shortlisted, invitedNext, onToggleShortlist, onToggleInvite }) {
   return (
     <div className="hub-recollab">

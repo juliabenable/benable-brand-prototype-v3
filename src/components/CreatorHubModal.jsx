@@ -159,8 +159,6 @@ export default function CreatorHubModal({
                   campaignId={campaignId}
                   creator={creator}
                   post={post}
-                  postIndex={idx}
-                  postCount={posts.length}
                   brandName={brandName}
                   existing={state.postcard}
                   onStartSend={(payload) => { setAnimPostcard(payload); setSending(true); }}
@@ -202,7 +200,7 @@ export default function CreatorHubModal({
 }
 
 /* ---------------- Postcard panel ---------------- */
-function PostcardPanel({ campaignId, creator, post, postIndex, postCount, brandName, existing, onStartSend, finishSend, animMs }) {
+function PostcardPanel({ campaignId, creator, post, brandName, existing, onStartSend, finishSend, animMs }) {
   const viewOnly = !!existing;
   const [style, setStyle] = useState(viewOnly ? existing.style : getPreferredStyle());
   const [message, setMessage] = useState(
@@ -231,11 +229,6 @@ function PostcardPanel({ campaignId, creator, post, postIndex, postCount, brandN
     <div className="hub-postcard">
       <div className="hub-postcard__preview">
         <PC {...props} />
-        {style === 'polaroid' && postCount > 1 && !viewOnly && (
-          <div className="hub-postcard__featuring">
-            Featuring the post you're viewing — {postIndex + 1} of {postCount}
-          </div>
-        )}
       </div>
 
       {viewOnly ? (

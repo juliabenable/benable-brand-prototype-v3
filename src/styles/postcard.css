@@ -921,18 +921,6 @@
 .hub-receipt > div b { color: #1a1a1a; font-weight: 600; }
 .hub-confirm-row { display: flex; gap: 10px; align-items: center; }
 
-/* "Featuring this post" note under the postcard preview */
-.hub-postcard__featuring {
-  margin-top: 10px;
-  font-size: 11px;
-  color: #8a6a82;
-  background: #fdf0f5;
-  border: 1px solid #f4d6e4;
-  border-radius: 999px;
-  padding: 5px 12px;
-  text-align: center;
-}
-
 /* Re-collab panel */
 .hub-recollab { display: flex; flex-direction: column; gap: 14px; }
 .hub-recollab__lede { font-size: 13px; color: #5a5a5a; margin: 0 0 2px; }

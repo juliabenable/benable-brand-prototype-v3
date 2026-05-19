@@ -6,16 +6,19 @@ import {
   campaignDetailsModalModal,
   addCreatorsModalModal,
 } from '../data/capturedHtml.js';
-import SayThanksModal from '../components/SayThanksModal.jsx';
-import { getPostcard, getPostcardCount, clearAllPostcards } from '../utils/postcardStorage.js';
+import CreatorHubModal from '../components/CreatorHubModal.jsx';
+import {
+  getCreatorState,
+  getActionedCount,
+  clearAllActions,
+} from '../utils/postcardStorage.js';
 
 const BRAND_NAME = 'Pikora';
 
 export default function CampaignDetailPage() {
   const [tab, setTab] = useState('Dashboard'); // 'Dashboard' | 'Content'
   const [modal, setModal] = useState(null); // null | 'details' | 'addCreators'
-  const [thanksTarget, setThanksTarget] = useState(null); // { creator, postData } or null
-  // bump this to force a re-decoration of the cards after a thank-you is sent
+  const [hubTarget, setHubTarget] = useState(null); // { creator, posts } or null
   const [decorTick, setDecorTick] = useState(0);
   const ref = useRef(null);
   const navigate = useNavigate();
@@ -32,38 +35,27 @@ export default function CampaignDetailPage() {
     });
   }, [tab, html]);
 
-  // ----- Decorate content-post-cards with the Say Thanks button -----
+  // ----- Decorate content-post-cards with a "Thanked" badge -----
   useEffect(() => {
     if (tab !== 'Content') return;
     const root = ref.current;
     if (!root) return;
-    const cards = root.querySelectorAll('.content-post-card');
-    cards.forEach((card) => decorateCard(card, campaignId));
-  }, [tab, html, campaignId, decorTick, thanksTarget]);
+    root.querySelectorAll('.content-post-card').forEach((card) => decorateCard(card, campaignId));
+  }, [tab, html, campaignId, decorTick, hubTarget]);
 
   // ----- Click delegation -----
   useEffect(() => {
     const root = ref.current;
     if (!root) return;
     const onClick = (e) => {
-      // Say thanks button on a card
-      const sayThanks = e.target.closest('.say-thanks-overlay');
-      if (sayThanks) {
-        e.preventDefault();
-        e.stopPropagation();
-        const card = sayThanks.closest('.content-post-card');
-        openThanks(card);
-        return;
-      }
-      // Click anywhere else on a content-post-card → also open thanks
+      // Any click on a content-post-card opens the creator hub.
       const card = e.target.closest('.content-post-card');
       if (card) {
         e.preventDefault();
         e.stopPropagation();
-        openThanks(card);
+        openHub(card, root);
         return;
       }
-
       const tabBtn = e.target.closest('.workflow-dashboard-tab');
       if (tabBtn) {
         e.preventDefault();
@@ -93,23 +85,28 @@ export default function CampaignDetailPage() {
     return () => root.removeEventListener('click', onClick);
   }, [navigate, html, tab]);
 
-  function openThanks(card) {
-    const data = extractCreatorFromCard(card);
-    if (!data) return;
-    setThanksTarget(data);
+  // Open the hub for the clicked card's creator, gathering ALL their posts.
+  function openHub(clickedCard, root) {
+    const clicked = extractCard(clickedCard);
+    if (!clicked) return;
+    const allCards = Array.from(root.querySelectorAll('.content-post-card'));
+    const posts = allCards
+      .map(extractCard)
+      .filter((c) => c && c.creator.handle === clicked.creator.handle)
+      .map((c) => c.post);
+    setHubTarget({ creator: clicked.creator, posts });
   }
 
-  function onSent() {
-    setThanksTarget(null);
-    setDecorTick((t) => t + 1); // re-decorate cards to show "Thanked" state
-  }
-
-  function resetThanks() {
-    clearAllPostcards();
+  function onChanged() {
     setDecorTick((t) => t + 1);
   }
 
-  const sentCount = getPostcardCount(); // re-reads on every render
+  function resetAll() {
+    clearAllActions();
+    setDecorTick((t) => t + 1);
+  }
+
+  const actionedCount = getActionedCount(); // re-reads on every render
 
   return (
     <>
@@ -120,26 +117,26 @@ export default function CampaignDetailPage() {
       {modal === 'addCreators' && (
         <ModalLayer html={addCreatorsModalModal} onClose={() => setModal(null)} />
       )}
-      {thanksTarget && (
-        <SayThanksModal
+      {hubTarget && (
+        <CreatorHubModal
           campaignId={campaignId}
           brandName={BRAND_NAME}
-          creator={thanksTarget.creator}
-          postData={thanksTarget.postData}
-          onClose={() => setThanksTarget(null)}
-          onSent={onSent}
+          creator={hubTarget.creator}
+          posts={hubTarget.posts}
+          onClose={() => setHubTarget(null)}
+          onChanged={onChanged}
         />
       )}
-      {sentCount > 0 && !thanksTarget && (
+      {actionedCount > 0 && !hubTarget && (
         <button
           type="button"
           className="reset-thanks-fab"
-          onClick={resetThanks}
-          aria-label="Reset all sent postcards (demo only)"
-          title="Reset all sent postcards — demo only"
+          onClick={resetAll}
+          aria-label="Reset all creator actions (demo only)"
+          title="Reset all creator actions — demo only"
         >
           <span aria-hidden="true" className="reset-thanks-fab__icon">↺</span>
-          Reset {sentCount} sent postcard{sentCount === 1 ? '' : 's'}
+          Reset {actionedCount} creator{actionedCount === 1 ? '' : 's'}
           <span className="reset-thanks-fab__hint">demo</span>
         </button>
       )}
@@ -147,52 +144,45 @@ export default function CampaignDetailPage() {
   );
 }
 
-/* Find creator + post info from a card element and attach a "Say thanks"
- * button overlay (or a "Thanked ✓ <date>" version if one's already saved).
- */
+/* Add a small "Thanked" badge to a card if a postcard was sent to that creator. */
 function decorateCard(card, campaignId) {
-  // Ensure positioning context for the overlay
   if (getComputedStyle(card).position === 'static') {
     card.style.position = 'relative';
   }
-  // Remove any existing overlay so we rebuild based on latest state
-  card.querySelector('.say-thanks-overlay')?.remove();
+  card.querySelector('.thanked-badge')?.remove();
 
-  const info = extractCreatorFromCard(card);
+  const info = extractCard(card);
   if (!info) return;
-  const existing = getPostcard(campaignId, info.creator.handle);
+  const st = getCreatorState(campaignId, info.creator.handle);
+  if (!st.postcard) return;
 
-  const btn = document.createElement('button');
-  btn.type = 'button';
-  btn.className = 'say-thanks-overlay' + (existing ? ' say-thanks-overlay--thanked' : '');
-  if (existing) {
-    const date = new Date(existing.sentAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-    btn.innerHTML = `<span class="say-thanks-overlay__check">✓</span> Thanked · ${date}`;
-    btn.setAttribute('aria-label', `View postcard sent to ${info.creator.name} on ${date}`);
-  } else {
-    btn.innerHTML = `<span aria-hidden="true">♥</span> Say thanks`;
-    btn.setAttribute('aria-label', `Say thanks to ${info.creator.name}`);
-  }
-  card.appendChild(btn);
+  const date = new Date(st.postcard.sentAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  const badge = document.createElement('span');
+  badge.className = 'thanked-badge';
+  badge.innerHTML = `<span class="thanked-badge__check">✓</span> Thanked · ${date}`;
+  badge.setAttribute('aria-label', `Postcard sent to ${info.creator.name} on ${date}`);
+  card.appendChild(badge);
 }
 
-function extractCreatorFromCard(card) {
+function extractCard(card) {
   const nameEl = card.querySelector('.content-post-card__name');
   const handleEl = card.querySelector('.content-post-card__handle');
   if (!nameEl || !handleEl) return null;
-  const avatarText = card.querySelector('.content-post-card__avatar')?.textContent.trim() || nameEl.textContent.trim().charAt(0);
+  const avatarText =
+    card.querySelector('.content-post-card__avatar')?.textContent.trim() ||
+    nameEl.textContent.trim().charAt(0);
   const thumb = card.querySelector('.content-post-card__thumb-image')?.getAttribute('src') || '';
   const badge = card.querySelector('.content-post-card__badge')?.textContent.trim() || '';
+  const caption = card.querySelector('.content-post-card__caption')?.textContent.trim() || '';
+  const timeAgo = card.querySelector('.content-post-card__time')?.textContent.trim() || '';
+  const postUrl = card.getAttribute('href') || '';
   return {
     creator: {
       name: nameEl.textContent.trim(),
       handle: handleEl.textContent.trim(),
       avatarInitial: avatarText.charAt(0).toUpperCase(),
     },
-    postData: {
-      thumbnailUrl: thumb,
-      platform: badge,
-    },
+    post: { thumbnailUrl: thumb, platform: badge, caption, timeAgo, postUrl },
   };
 }
 

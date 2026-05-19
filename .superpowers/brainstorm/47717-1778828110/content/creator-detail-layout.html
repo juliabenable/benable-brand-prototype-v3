@@ -1,0 +1,373 @@
+<h2>Creator detail popup — pick a layout</h2>
+<p class="subtitle">Three structures for the new popup. Each shows a carousel of the creator's posts plus three action sections: <b>Send a postcard</b>, <b>Content rights</b>, and <b>Work with this creator again</b>.</p>
+
+<style>
+  .layout-grid { display: grid; grid-template-columns: 1fr; gap: 28px; margin-top: 22px; }
+  .layout-option {
+    background: #fff;
+    border: 2px solid #e5e5e5;
+    border-radius: 16px;
+    padding: 22px;
+    cursor: pointer;
+    transition: border-color .15s, transform .15s;
+  }
+  .layout-option:hover { border-color: #7a5cfa; transform: translateY(-2px); }
+  .layout-option.selected { border-color: #7a5cfa; background: #f5f3ff; }
+  .layout-letter {
+    display: inline-flex; width: 28px; height: 28px;
+    align-items: center; justify-content: center;
+    border-radius: 50%; background: #7a5cfa; color: #fff;
+    font-weight: 700; font-size: 14px; margin-bottom: 10px;
+  }
+  .layout-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
+  .layout-title { font-size: 17px; font-weight: 600; margin: 0; color: #1a1a1a; }
+  .layout-desc { font-size: 13px; color: #6b7280; margin: 0 0 16px; line-height: 1.5; }
+
+  /* mockup frame — fake "modal" preview */
+  .mock-modal {
+    background: #fafafa;
+    border: 1px solid #ebebeb;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: inset 0 1px 0 rgba(0,0,0,.02);
+  }
+  .mock-topbar {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 12px 16px;
+    background: linear-gradient(180deg, #1a1a1a, #2a2a2a);
+    color: #fff;
+    font-size: 11px;
+  }
+  .mock-topbar strong { font-weight: 600; }
+  .mock-topbar .x { background: rgba(255,255,255,.18); width: 18px; height: 18px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 13px; }
+
+  /* SHARED MOCK ELEMENTS */
+  .mock-carousel {
+    background: linear-gradient(135deg, #3a2f44 0%, #5d4a6b 40%, #c89472 100%);
+    position: relative;
+    color: #fff;
+    font-size: 10px;
+  }
+  .mock-carousel-arrow {
+    position: absolute; top: 50%; transform: translateY(-50%);
+    width: 24px; height: 24px;
+    background: rgba(255,255,255,.85);
+    border-radius: 50%;
+    color: #333;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 2px 4px rgba(0,0,0,.2);
+  }
+  .mock-carousel-arrow.l { left: 8px; }
+  .mock-carousel-arrow.r { right: 8px; }
+  .mock-dots {
+    position: absolute; bottom: 8px; left: 50%; transform: translateX(-50%);
+    display: flex; gap: 4px;
+  }
+  .mock-dots span { width: 5px; height: 5px; border-radius: 50%; background: rgba(255,255,255,.4); }
+  .mock-dots span.on { background: #fff; }
+  .mock-platform-badge {
+    position: absolute; top: 8px; left: 8px;
+    background: rgba(0,0,0,.5); color: #fff; padding: 2px 7px; border-radius: 999px;
+    font-size: 9px;
+  }
+  .mock-caption {
+    padding: 10px 12px;
+    background: #fff;
+    color: #444;
+    font-size: 10px;
+    line-height: 1.35;
+    border-top: 1px solid #ebebeb;
+  }
+  .mock-caption .creator-line {
+    color: #1a1a1a; font-weight: 600; margin-bottom: 3px;
+  }
+
+  /* RIGHT-PANEL SECTION CARDS */
+  .sec-card {
+    background: #fff;
+    border: 1px solid #ebebeb;
+    border-radius: 8px;
+    padding: 10px 12px;
+    font-size: 10px;
+    color: #444;
+    line-height: 1.4;
+  }
+  .sec-card .sec-label {
+    text-transform: uppercase;
+    letter-spacing: .08em;
+    font-size: 8px;
+    font-weight: 600;
+    color: #888;
+    margin-bottom: 3px;
+  }
+  .sec-card .sec-title {
+    color: #1a1a1a;
+    font-weight: 600;
+    font-size: 11px;
+    margin-bottom: 4px;
+  }
+  .sec-card .sec-cta {
+    margin-top: 6px;
+    background: #7a5cfa;
+    color: #fff;
+    border-radius: 6px;
+    padding: 4px 10px;
+    font-size: 9px;
+    font-weight: 600;
+    display: inline-block;
+  }
+  .sec-card .sec-cta--ghost {
+    background: transparent;
+    color: #7a5cfa;
+    border: 1px solid rgba(122, 92, 250, 0.25);
+  }
+  .sec-card .sec-status {
+    display: inline-block;
+    background: #f5f3ff;
+    color: #5d3fd3;
+    border-radius: 999px;
+    padding: 2px 8px;
+    font-size: 9px;
+    font-weight: 500;
+    margin-bottom: 4px;
+  }
+  .sec-card .sec-status--ok {
+    background: #e3f5e9;
+    color: #2c7a4a;
+  }
+
+  /* ============== LAYOUT A — Side-by-side, stacked cards ============== */
+  .layout-a .body { display: grid; grid-template-columns: 1.4fr 1fr; gap: 0; }
+  .layout-a .left { display: flex; flex-direction: column; }
+  .layout-a .mock-carousel { aspect-ratio: 4/5; }
+  .layout-a .mock-caption { min-height: 56px; }
+  .layout-a .right { padding: 14px; background: #fbfafd; display: flex; flex-direction: column; gap: 10px; border-left: 1px solid #ebebeb; }
+  .layout-a .right .heading {
+    font-size: 13px; font-weight: 600; color: #1a1a1a;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .layout-a .creator-meta {
+    font-size: 10px; color: #6b7280; margin-bottom: 4px;
+  }
+
+  /* ============== LAYOUT B — Tabbed right panel ============== */
+  .layout-b .body { display: grid; grid-template-columns: 1.6fr 1fr; gap: 0; }
+  .layout-b .left { display: flex; flex-direction: column; }
+  .layout-b .mock-carousel { aspect-ratio: 4/5; }
+  .layout-b .mock-caption { min-height: 60px; }
+  .layout-b .right { padding: 14px; background: #fbfafd; border-left: 1px solid #ebebeb; display: flex; flex-direction: column; gap: 12px; }
+  .layout-b .tabs {
+    display: flex;
+    gap: 4px;
+    padding: 3px;
+    background: #f1eef8;
+    border-radius: 8px;
+  }
+  .layout-b .tab {
+    flex: 1;
+    text-align: center;
+    padding: 5px 4px;
+    font-size: 9px;
+    font-weight: 500;
+    color: #6b7280;
+    border-radius: 6px;
+  }
+  .layout-b .tab.active { background: #fff; color: #1a1a1a; box-shadow: 0 1px 2px rgba(0,0,0,.06); }
+  .layout-b .tab-content {
+    background: #fff;
+    border: 1px solid #ebebeb;
+    border-radius: 8px;
+    padding: 12px;
+    font-size: 11px;
+    color: #444;
+    flex: 1;
+  }
+
+  /* ============== LAYOUT C — Top carousel, action row below ============== */
+  .layout-c .body { display: flex; flex-direction: column; }
+  .layout-c .mock-carousel { aspect-ratio: 16/8; }
+  .layout-c .mock-caption { min-height: 44px; }
+  .layout-c .row {
+    display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px;
+    padding: 14px;
+    background: #fbfafd;
+    border-top: 1px solid #ebebeb;
+  }
+
+  .meta-bar { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+  .avatar-circ { width: 28px; height: 28px; border-radius: 50%; background: #c4a4e8; display: inline-flex; align-items: center; justify-content: center; color: #fff; font-weight: 600; font-size: 11px; }
+  .meta-bar .name { font-size: 11px; font-weight: 600; color: #1a1a1a; }
+  .meta-bar .handle { font-size: 10px; color: #6b7280; }
+</style>
+
+<div class="layout-grid">
+
+  <!-- ============== A ============== -->
+  <div class="layout-option layout-a" data-choice="a" onclick="toggleSelect(this)">
+    <div class="layout-header">
+      <div>
+        <div class="layout-letter">A</div>
+        <h3 class="layout-title">Carousel left + three stacked cards right</h3>
+        <p class="layout-desc">All three actions visible at once. Carousel takes the larger column; right side scrolls if cards exceed height.</p>
+      </div>
+    </div>
+    <div class="mock-modal">
+      <div class="mock-topbar"><strong>Julia Brandy8</strong> · @rmtfka<span class="x">×</span></div>
+      <div class="body">
+        <div class="left">
+          <div class="mock-carousel">
+            <div class="mock-platform-badge">▶ Reel</div>
+            <div class="mock-carousel-arrow l">‹</div>
+            <div class="mock-carousel-arrow r">›</div>
+            <div class="mock-dots"><span class="on"></span><span></span><span></span></div>
+          </div>
+          <div class="mock-caption">
+            <div class="creator-line">Reel · 2 of 3</div>
+            this way of thinking is what got me to quit my job, start my business…
+          </div>
+        </div>
+        <div class="right">
+          <div class="meta-bar">
+            <span class="avatar-circ">J</span>
+            <div>
+              <div class="name">Julia Brandy8</div>
+              <div class="handle">@rmtfka · 1mo ago</div>
+            </div>
+          </div>
+
+          <div class="sec-card">
+            <div class="sec-label">Postcard</div>
+            <div class="sec-title">Send a thank-you</div>
+            <div>A cutesy postcard delivered to the creator.</div>
+            <span class="sec-cta">♥ Say thanks</span>
+          </div>
+
+          <div class="sec-card">
+            <div class="sec-label">Content rights</div>
+            <div class="sec-title">Organic use only</div>
+            <div><span class="sec-status sec-status--ok">Organic ✓</span> Granted with the campaign.</div>
+            <span class="sec-cta">Buy paid rights — $200</span>
+          </div>
+
+          <div class="sec-card">
+            <div class="sec-label">Re-collab</div>
+            <div class="sec-title">Work with Julia again?</div>
+            <div>Invite to a new campaign, or save to shortlist.</div>
+            <span class="sec-cta sec-cta--ghost">＋ Invite to campaign</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <p class="layout-desc" style="margin-top:14px">
+      <b>Best for:</b> wide screens, fast scanning. Brand sees all options without clicking.
+      <b>Watch out:</b> right column gets crowded if any section grows (e.g., paid-rights pricing details).
+    </p>
+  </div>
+
+  <!-- ============== B ============== -->
+  <div class="layout-option layout-b" data-choice="b" onclick="toggleSelect(this)">
+    <div class="layout-header">
+      <div>
+        <div class="layout-letter">B</div>
+        <h3 class="layout-title">Carousel left + tabbed right panel</h3>
+        <p class="layout-desc">Same split, but the right panel is tabbed. One section at a time gets full breathing room — useful when paid rights needs space for pricing/usage terms.</p>
+      </div>
+    </div>
+    <div class="mock-modal">
+      <div class="mock-topbar"><strong>Julia Brandy8</strong> · @rmtfka<span class="x">×</span></div>
+      <div class="body">
+        <div class="left">
+          <div class="mock-carousel">
+            <div class="mock-platform-badge">▶ Reel</div>
+            <div class="mock-carousel-arrow l">‹</div>
+            <div class="mock-carousel-arrow r">›</div>
+            <div class="mock-dots"><span class="on"></span><span></span><span></span></div>
+          </div>
+          <div class="mock-caption">
+            <div class="creator-line">Reel · 2 of 3</div>
+            this way of thinking is what got me to quit my job, start my business…
+          </div>
+        </div>
+        <div class="right">
+          <div class="meta-bar">
+            <span class="avatar-circ">J</span>
+            <div>
+              <div class="name">Julia Brandy8</div>
+              <div class="handle">@rmtfka · 1mo ago</div>
+            </div>
+          </div>
+          <div class="tabs">
+            <div class="tab">Postcard</div>
+            <div class="tab active">Rights</div>
+            <div class="tab">Re-collab</div>
+          </div>
+          <div class="tab-content">
+            <div style="font-weight:600; color:#1a1a1a; margin-bottom:6px">Content rights</div>
+            <div style="font-size:10px; color:#6b7280; margin-bottom:8px">Currently <b style="color:#2c7a4a">organic use only</b> — included with the campaign. Boosting this Reel as a paid ad requires upgrading rights.</div>
+            <div style="background:#f5f3ff; padding:10px; border-radius:6px; font-size:10px; margin-bottom:8px">
+              <div style="font-weight:600; color:#1a1a1a; margin-bottom:4px">Paid usage rights — $200</div>
+              <div style="color:#6b7280; font-size:9px">30-day boost license · all platforms · 2× allowlist</div>
+            </div>
+            <span class="sec-cta">Upgrade to paid rights</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <p class="layout-desc" style="margin-top:14px">
+      <b>Best for:</b> sections that need room (especially rights). Cleaner per-tab, less crowded.
+      <b>Watch out:</b> one extra click to discover each section; doesn't show "thanked" status at-a-glance.
+    </p>
+  </div>
+
+  <!-- ============== C ============== -->
+  <div class="layout-option layout-c" data-choice="c" onclick="toggleSelect(this)">
+    <div class="layout-header">
+      <div>
+        <div class="layout-letter">C</div>
+        <h3 class="layout-title">Top carousel + three action cards in a row</h3>
+        <p class="layout-desc">Carousel runs full width across the top; three equal-weight action cards sit below in a single row. Less compressed for the carousel.</p>
+      </div>
+    </div>
+    <div class="mock-modal">
+      <div class="mock-topbar"><strong>Julia Brandy8</strong> · @rmtfka<span class="x">×</span></div>
+      <div class="body">
+        <div class="mock-carousel" style="aspect-ratio:16/6">
+          <div class="mock-platform-badge">▶ Reel</div>
+          <div class="mock-carousel-arrow l">‹</div>
+          <div class="mock-carousel-arrow r">›</div>
+          <div class="mock-dots"><span class="on"></span><span></span><span></span></div>
+        </div>
+        <div class="mock-caption">
+          <div class="creator-line">Reel · 2 of 3 · Julia Brandy8 @rmtfka</div>
+          this way of thinking is what got me to quit my job, start my business…
+        </div>
+        <div class="row">
+          <div class="sec-card">
+            <div class="sec-label">Postcard</div>
+            <div class="sec-title">Send a thank-you</div>
+            <div>A cutesy postcard.</div>
+            <span class="sec-cta">♥ Say thanks</span>
+          </div>
+          <div class="sec-card">
+            <div class="sec-label">Content rights</div>
+            <div class="sec-title">Organic only</div>
+            <div><span class="sec-status sec-status--ok">✓ Organic</span></div>
+            <span class="sec-cta">Buy paid — $200</span>
+          </div>
+          <div class="sec-card">
+            <div class="sec-label">Re-collab</div>
+            <div class="sec-title">Invite again?</div>
+            <div>Add to next campaign.</div>
+            <span class="sec-cta sec-cta--ghost">＋ Invite</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <p class="layout-desc" style="margin-top:14px">
+      <b>Best for:</b> showing off the content (carousel is big). Three actions feel balanced/equal.
+      <b>Watch out:</b> on narrow viewports the row collapses; carousel takes a lot of vertical space before the actions are visible.
+    </p>
+  </div>
+</div>
+
+<p style="margin-top:28px;font-size:13px;color:#6b7280">Pick the layout that feels right. You can also describe a hybrid (e.g., "A but with tabs in the rights card").</p>

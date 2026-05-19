@@ -1,0 +1,231 @@
+<h2>Round 2 — different structures, not just different skins</h2>
+<p class="subtitle">The last three were all "3 stacked cards" with different paint. These are genuinely different ways to organize the right side. Carousel stays small on the left.</p>
+
+<style>
+  .r2-grid { display: grid; grid-template-columns: 1fr; gap: 32px; margin-top: 22px; }
+  .r2-opt {
+    background: #fff; border: 2px solid #e5e5e5; border-radius: 16px;
+    padding: 24px; cursor: pointer; transition: border-color .15s, transform .15s;
+  }
+  .r2-opt:hover { border-color: #7a5cfa; transform: translateY(-2px); }
+  .r2-opt.selected { border-color: #7a5cfa; background: #f5f3ff; }
+  .r2-letter { display: inline-flex; width: 28px; height: 28px; align-items: center; justify-content: center; border-radius: 50%; background: #7a5cfa; color: #fff; font-weight: 700; font-size: 14px; margin-bottom: 10px; }
+  .r2-title { font-size: 17px; font-weight: 600; margin: 0 0 4px; color: #1a1a1a; }
+  .r2-desc { font-size: 13px; color: #6b7280; margin: 0 0 18px; line-height: 1.5; }
+  .r2-desc b { color: #1a1a1a; }
+
+  .mm { background: linear-gradient(180deg, #fdfcfb 0%, #f7f3ec 100%); border: 1px solid #ebebeb; border-radius: 12px; padding: 20px; }
+  .mm-top { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid #ebebeb; }
+  .mm-top .av { width: 32px; height: 32px; border-radius: 50%; background: linear-gradient(135deg, #c4a4e8, #f8c3d0); display: inline-flex; align-items: center; justify-content: center; color: #fff; font-weight: 600; font-size: 13px; }
+  .mm-top .nm { font-size: 14px; font-weight: 600; color: #1a1a1a; }
+  .mm-top .hd { font-size: 12px; color: #6b7280; }
+  .mm-top .x { margin-left: auto; width: 28px; height: 28px; border-radius: 50%; background: rgba(0,0,0,.06); color: #444; display: inline-flex; align-items: center; justify-content: center; }
+  .mm-body { display: grid; grid-template-columns: 220px 1fr; gap: 24px; align-items: start; }
+
+  .mini-c { width: 220px; background: #fff; border-radius: 10px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,.06); border: 1px solid #ebebeb; }
+  .mini-c .th { width: 100%; aspect-ratio: 4/5; background: linear-gradient(135deg, #3a2f44, #5d4a6b 40%, #c89472); position: relative; }
+  .mini-c .th .pf { position: absolute; top: 8px; left: 8px; background: rgba(0,0,0,.55); color: #fff; padding: 3px 8px; border-radius: 999px; font-size: 10px; font-weight: 600; }
+  .mini-c .th .ar { position: absolute; inset: 0; display: flex; align-items: center; justify-content: space-between; padding: 0 6px; }
+  .mini-c .th .ar span { width: 24px; height: 24px; border-radius: 50%; background: rgba(255,255,255,.88); display: inline-flex; align-items: center; justify-content: center; font-size: 13px; color: #1a1a1a; }
+  .mini-c .th .dt { position: absolute; bottom: 8px; left: 50%; transform: translateX(-50%); display: flex; gap: 4px; }
+  .mini-c .th .dt i { width: 5px; height: 5px; border-radius: 50%; background: rgba(255,255,255,.4); }
+  .mini-c .th .dt i.on { background: #fff; }
+  .mini-c .mt { padding: 10px 12px; font-size: 11px; color: #444; }
+  .mini-c .mt .cn { font-weight: 600; color: #1a1a1a; font-size: 12px; }
+  .mini-c .mt .ct { color: #6b7280; font-size: 10px; margin: 3px 0; }
+  .mini-c .mt .cap { display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+
+  /* ============ A: FOCUSED TABS ============ */
+  .a-tabs { display: flex; gap: 6px; margin-bottom: 16px; }
+  .a-tab { flex: 1; text-align: center; padding: 10px 8px; border-radius: 10px; font-size: 12px; font-weight: 600; color: #6b7280; background: #f1eee8; cursor: pointer; }
+  .a-tab.on { background: #1a1a1a; color: #fff; }
+  .a-tab .ic { display: block; font-size: 16px; margin-bottom: 3px; }
+  .a-panel { background: #fff; border: 1px solid #ebebeb; border-radius: 14px; padding: 22px; min-height: 230px; }
+  .a-panel .pc-preview {
+    width: 130px; height: 168px; border-radius: 4px; float: right; margin-left: 18px;
+    background: #fffcf6; border: 1px solid #d6b78b; box-shadow: 0 8px 18px rgba(0,0,0,.14); transform: rotate(2deg); padding: 7px 7px 0;
+  }
+  .a-panel .pc-preview .ph { width: 100%; height: 64%; background: linear-gradient(135deg,#5d4a6b,#c89472); }
+  .a-panel .pc-preview .cp { font-family:'Caveat',cursive; font-size: 11px; text-align: center; margin-top: 7px; color: #444; line-height: 1.1; }
+  .a-panel h3 { margin: 0 0 6px; font-size: 18px; color: #1a1a1a; }
+  .a-panel p { margin: 0 0 14px; font-size: 13px; color: #5a5a5a; line-height: 1.5; }
+  .a-panel .go { display:inline-flex; align-items:center; gap:6px; background: linear-gradient(135deg,#e85a82,#c4a4e8); color:#fff; font-weight:600; font-size:13px; padding:10px 18px; border-radius:999px; }
+
+  /* ============ B: VICTORY-LAP JOURNEY ============ */
+  .b-wrap { position: relative; padding-left: 30px; }
+  .b-line { position: absolute; left: 13px; top: 14px; bottom: 14px; width: 3px; background: linear-gradient(180deg,#f8c3d0,#c4a4e8,#9bb9e6); border-radius: 2px; }
+  .b-node { position: relative; margin-bottom: 16px; }
+  .b-dot { position: absolute; left: -30px; top: 14px; width: 26px; height: 26px; border-radius: 50%; display:inline-flex; align-items:center; justify-content:center; font-size: 13px; color:#fff; box-shadow: 0 2px 6px rgba(0,0,0,.15); }
+  .b-dot.d1 { background: linear-gradient(135deg,#e85a82,#f8a3c0); }
+  .b-dot.d2 { background: linear-gradient(135deg,#f0a830,#ffd166); }
+  .b-dot.d3 { background: linear-gradient(135deg,#7a5cfa,#b8a6ee); }
+  .b-card { background: #fff; border: 1px solid #ebebeb; border-radius: 14px; padding: 14px 16px; box-shadow: 0 3px 10px rgba(0,0,0,.04); }
+  .b-card .step { font-size: 10px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: #b0a0d0; }
+  .b-card h4 { margin: 3px 0 5px; font-size: 15px; color: #1a1a1a; }
+  .b-card p { margin: 0 0 10px; font-size: 12px; color: #5a5a5a; line-height: 1.45; }
+  .b-card .act { display:inline-flex; align-items:center; gap:6px; font-size:12px; font-weight:600; color:#7a5cfa; }
+  .b-card .pricepill { background:#fff5d8; color:#8a6a1c; font-weight:700; font-size:11px; padding:2px 8px; border-radius:999px; margin-left:8px; }
+  .b-celebrate { font-family:'Georgia',serif; font-style:italic; font-size:15px; color:#1a1a1a; margin-bottom:14px; }
+  .b-celebrate span { color:#e85a82; }
+
+  /* ============ C: HERO + QUICK TRAY ============ */
+  .c-hero {
+    position: relative; border-radius: 16px; overflow: hidden; padding: 22px;
+    background: linear-gradient(135deg,#ffe0e8 0%, #ded6fb 100%);
+    margin-bottom: 14px;
+  }
+  .c-hero .spark { position:absolute; color:rgba(255,255,255,.8); font-size:14px; }
+  .c-hero .s1 { top:12px; right:18px; } .c-hero .s2 { bottom:16px; left:24px; font-size:11px; } .c-hero .s3 { top:40px; left:50%; font-size:9px; }
+  .c-hero .mini-pc {
+    float:right; width: 116px; height: 150px; background:#fffcf6; border:1px solid #d6b78b; border-radius:4px;
+    box-shadow:0 10px 22px rgba(0,0,0,.18); transform:rotate(3deg); margin-left:16px; padding:6px 6px 0;
+  }
+  .c-hero .mini-pc .ph { width:100%; height:62%; background:linear-gradient(135deg,#5d4a6b,#c89472); }
+  .c-hero .mini-pc .cp { font-family:'Caveat',cursive; font-size:10px; text-align:center; margin-top:6px; color:#555; }
+  .c-hero .lbl { font-size:11px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:#b0648a; }
+  .c-hero h3 { margin:4px 0 8px; font-family:'Georgia',serif; font-style:italic; font-size:24px; color:#1a1a1a; }
+  .c-hero p { margin:0 0 14px; font-size:12px; color:#6a5a6a; line-height:1.5; max-width: 60%; }
+  .c-hero .go { display:inline-flex; align-items:center; gap:6px; background:#1a1a1a; color:#fff; font-weight:600; font-size:13px; padding:10px 18px; border-radius:999px; }
+  .c-tray { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .c-quick { background:#fff; border:1px solid #ebebeb; border-radius:12px; padding:14px; display:flex; gap:10px; align-items:flex-start; }
+  .c-quick .qi { width:36px; height:36px; border-radius:10px; display:inline-flex; align-items:center; justify-content:center; font-size:17px; flex-shrink:0; }
+  .c-quick.q1 .qi { background:#fff5d8; color:#c08a1c; }
+  .c-quick.q2 .qi { background:#ece6ff; color:#7a5cfa; }
+  .c-quick h4 { margin:0 0 3px; font-size:13px; color:#1a1a1a; }
+  .c-quick p { margin:0; font-size:11px; color:#6b7280; line-height:1.35; }
+  .c-quick .mini-cta { font-size:11px; font-weight:600; color:#7a5cfa; margin-top:6px; display:inline-block; }
+</style>
+
+<div class="r2-grid">
+
+  <!-- A: FOCUSED TABS -->
+  <div class="r2-opt" data-choice="focused-tabs" onclick="toggleSelect(this)">
+    <div class="r2-letter">A</div>
+    <h3 class="r2-title">Focused tabs</h3>
+    <p class="r2-desc">One big expressive panel at a time. Tabs across the top; each panel gets full room to be delightful — the Postcard tab can even compose inline with a live mini-preview. <b>Why it's better:</b> nothing is cramped; each action is a moment, not a tile.</p>
+    <div class="mm">
+      <div class="mm-top"><span class="av">J</span><div><div class="nm">Julia Brandy8</div><div class="hd">@rmtfka · 3 posts</div></div><span class="x">×</span></div>
+      <div class="mm-body">
+        <div>
+          <div class="mini-c">
+            <div class="th"><span class="pf">▶ Reel</span><div class="ar"><span>‹</span><span>›</span></div><div class="dt"><i></i><i class="on"></i><i></i></div></div>
+            <div class="mt"><div class="cn">Julia Brandy8</div><div class="ct">Reel · 2 of 3 · 1mo ago</div><div class="cap">this way of thinking is what got me to quit my job, start my business…</div></div>
+          </div>
+        </div>
+        <div>
+          <div class="a-tabs">
+            <div class="a-tab on"><span class="ic">♥</span>Postcard</div>
+            <div class="a-tab"><span class="ic">⊛</span>Rights</div>
+            <div class="a-tab"><span class="ic">＋</span>Re-collab</div>
+          </div>
+          <div class="a-panel">
+            <div class="pc-preview"><div class="ph"></div><div class="cp">we loved<br/>this! xo</div></div>
+            <h3>Send Julia a thank-you</h3>
+            <p>A cutesy postcard delivered to her inbox — Polaroid or vintage style, sealed with a heart. Write a couple of lines and we'll handle the rest.</p>
+            <span class="go">♥ Compose postcard</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- B: VICTORY-LAP JOURNEY -->
+  <div class="r2-opt" data-choice="journey" onclick="toggleSelect(this)">
+    <div class="r2-letter">B</div>
+    <h3 class="r2-title">Victory-lap journey</h3>
+    <p class="r2-desc">A playful vertical path — "the campaign's done, here's your lap." Three illustrated stops connected by a gradient line. Feels celebratory and guides the brand through what to do next. <b>Why it's fun:</b> it's a journey, not a menu.</p>
+    <div class="mm">
+      <div class="mm-top"><span class="av">J</span><div><div class="nm">Julia Brandy8</div><div class="hd">@rmtfka · 3 posts</div></div><span class="x">×</span></div>
+      <div class="mm-body">
+        <div>
+          <div class="mini-c">
+            <div class="th"><span class="pf">▶ Reel</span><div class="ar"><span>‹</span><span>›</span></div><div class="dt"><i></i><i class="on"></i><i></i></div></div>
+            <div class="mt"><div class="cn">Julia Brandy8</div><div class="ct">Reel · 2 of 3 · 1mo ago</div><div class="cap">this way of thinking is what got me to quit my job, start my business…</div></div>
+          </div>
+        </div>
+        <div>
+          <div class="b-celebrate">Julia crushed it <span>🎉</span> — here's your victory lap.</div>
+          <div class="b-wrap">
+            <div class="b-line"></div>
+            <div class="b-node">
+              <span class="b-dot d1">♥</span>
+              <div class="b-card">
+                <div class="step">First · say it</div>
+                <h4>Send a thank-you postcard</h4>
+                <p>A cutesy signed note in her inbox.</p>
+                <span class="act">Compose postcard →</span>
+              </div>
+            </div>
+            <div class="b-node">
+              <span class="b-dot d2">⊛</span>
+              <div class="b-card">
+                <div class="step">Then · use it</div>
+                <h4>Content rights <span class="pricepill">Organic ✓ · Paid $200</span></h4>
+                <p>Organic use is yours. Boost this Reel as a paid ad?</p>
+                <span class="act">Buy paid rights →</span>
+              </div>
+            </div>
+            <div class="b-node">
+              <span class="b-dot d3">＋</span>
+              <div class="b-card">
+                <div class="step">Next · keep it going</div>
+                <h4>Work with Julia again?</h4>
+                <p>Save to shortlist or invite to your next campaign.</p>
+                <span class="act">Invite to next campaign →</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- C: HERO + QUICK TRAY -->
+  <div class="r2-opt" data-choice="hero-tray" onclick="toggleSelect(this)">
+    <div class="r2-letter">C</div>
+    <h3 class="r2-title">Hero + quick tray</h3>
+    <p class="r2-desc">The postcard is the emotional one, so it gets a big beautiful hero with a peeking mini-preview. Rights + re-collab are compact "quick action" chips below — present but not competing. <b>Why it works:</b> clear hierarchy, the cutesy moment leads.</p>
+    <div class="mm">
+      <div class="mm-top"><span class="av">J</span><div><div class="nm">Julia Brandy8</div><div class="hd">@rmtfka · 3 posts</div></div><span class="x">×</span></div>
+      <div class="mm-body">
+        <div>
+          <div class="mini-c">
+            <div class="th"><span class="pf">▶ Reel</span><div class="ar"><span>‹</span><span>›</span></div><div class="dt"><i></i><i class="on"></i><i></i></div></div>
+            <div class="mt"><div class="cn">Julia Brandy8</div><div class="ct">Reel · 2 of 3 · 1mo ago</div><div class="cap">this way of thinking is what got me to quit my job, start my business…</div></div>
+          </div>
+        </div>
+        <div>
+          <div class="c-hero">
+            <span class="spark s1">✦</span><span class="spark s2">·*✧</span><span class="spark s3">✦</span>
+            <div class="mini-pc"><div class="ph"></div><div class="cp">we loved<br/>this! xo</div></div>
+            <div class="lbl">A little something</div>
+            <h3>Send Julia a postcard</h3>
+            <p>A cutesy signed note, sealed with a heart, delivered to her inbox.</p>
+            <span class="go">♥ Compose postcard</span>
+          </div>
+          <div class="c-tray">
+            <div class="c-quick q1">
+              <span class="qi">⊛</span>
+              <div>
+                <h4>Content rights</h4>
+                <p>Organic ✓ · Paid $200</p>
+                <span class="mini-cta">Upgrade →</span>
+              </div>
+            </div>
+            <div class="c-quick q2">
+              <span class="qi">＋</span>
+              <div>
+                <h4>Collab again?</h4>
+                <p>Save Julia for later</p>
+                <span class="mini-cta">Invite →</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<p style="margin-top:28px;font-size:13px;color:#6b7280">These are structurally different from round 1. Pick one, mix, or tell me what's still not landing and I'll go another direction.</p>

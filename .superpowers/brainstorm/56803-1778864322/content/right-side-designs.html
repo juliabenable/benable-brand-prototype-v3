@@ -1,0 +1,455 @@
+<h2>Right-side design — three fun directions</h2>
+<p class="subtitle">Same smaller carousel on the left (sized like a post tile). Right side is where the fun is — three different aesthetic directions for the three action sections.</p>
+
+<style>
+  .layout-grid { display: grid; grid-template-columns: 1fr; gap: 32px; margin-top: 22px; }
+  .layout-option {
+    background: #fff;
+    border: 2px solid #e5e5e5;
+    border-radius: 16px;
+    padding: 24px;
+    cursor: pointer;
+    transition: border-color .15s, transform .15s;
+  }
+  .layout-option:hover { border-color: #7a5cfa; transform: translateY(-2px); }
+  .layout-option.selected { border-color: #7a5cfa; background: #f5f3ff; }
+  .layout-letter {
+    display: inline-flex; width: 28px; height: 28px;
+    align-items: center; justify-content: center;
+    border-radius: 50%; background: #7a5cfa; color: #fff;
+    font-weight: 700; font-size: 14px; margin-bottom: 10px;
+  }
+  .layout-title { font-size: 17px; font-weight: 600; margin: 0 0 4px; color: #1a1a1a; }
+  .layout-desc { font-size: 13px; color: #6b7280; margin: 0 0 18px; line-height: 1.5; }
+  .layout-desc b { color: #1a1a1a; }
+
+  /* fake modal frame */
+  .mock-modal {
+    background: linear-gradient(180deg, #fdfcfb 0%, #faf6ef 100%);
+    border: 1px solid #ebebeb;
+    border-radius: 12px;
+    overflow: hidden;
+    padding: 20px;
+  }
+  .mock-topbar {
+    display: flex; align-items: center; gap: 10px;
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid #ebebeb;
+  }
+  .mock-topbar .avatar { width: 32px; height: 32px; border-radius: 50%; background: linear-gradient(135deg, #c4a4e8, #f8c3d0); display: inline-flex; align-items: center; justify-content: center; color: #fff; font-weight: 600; font-size: 13px; }
+  .mock-topbar .name { font-size: 14px; font-weight: 600; color: #1a1a1a; }
+  .mock-topbar .handle { font-size: 12px; color: #6b7280; }
+  .mock-topbar .x { margin-left: auto; width: 28px; height: 28px; border-radius: 50%; background: rgba(0,0,0,.06); color: #444; display: inline-flex; align-items: center; justify-content: center; }
+
+  .mock-body { display: grid; grid-template-columns: 240px 1fr; gap: 24px; align-items: start; }
+
+  /* Smaller carousel — sized like a post tile */
+  .mini-carousel {
+    width: 240px;
+    background: #fff;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 4px 12px rgba(0,0,0,.06);
+    border: 1px solid #ebebeb;
+  }
+  .mini-carousel-thumb {
+    width: 100%;
+    aspect-ratio: 4/5;
+    background: linear-gradient(135deg, #3a2f44 0%, #5d4a6b 40%, #c89472 100%);
+    position: relative;
+  }
+  .mini-carousel-thumb .platform {
+    position: absolute; top: 8px; left: 8px;
+    background: rgba(0,0,0,.55); color: #fff;
+    padding: 3px 8px; border-radius: 999px; font-size: 10px; font-weight: 600;
+  }
+  .mini-carousel-thumb .arrows {
+    position: absolute; inset: 0; display: flex; align-items: center; justify-content: space-between; padding: 0 6px;
+  }
+  .mini-carousel-thumb .arrow {
+    width: 26px; height: 26px; border-radius: 50%;
+    background: rgba(255,255,255,.88);
+    display: inline-flex; align-items: center; justify-content: center;
+    color: #1a1a1a; font-size: 14px;
+    box-shadow: 0 2px 4px rgba(0,0,0,.15);
+  }
+  .mini-carousel-thumb .dots {
+    position: absolute; bottom: 8px; left: 50%; transform: translateX(-50%);
+    display: flex; gap: 4px;
+  }
+  .mini-carousel-thumb .dots span { width: 5px; height: 5px; border-radius: 50%; background: rgba(255,255,255,.4); }
+  .mini-carousel-thumb .dots span.on { background: #fff; }
+  .mini-carousel-meta {
+    padding: 10px 12px;
+    font-size: 11px;
+    color: #444;
+    line-height: 1.4;
+  }
+  .mini-carousel-meta .creator-name { color: #1a1a1a; font-weight: 600; font-size: 12px; }
+  .mini-carousel-meta .count { color: #6b7280; font-size: 10px; margin-bottom: 4px; }
+  .mini-carousel-meta .caption { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+
+  /* ====================================================== */
+  /* OPTION 1: POSTCARD STACK — handcrafted, washi tape feel */
+  /* ====================================================== */
+  .opt1 .right { display: flex; flex-direction: column; gap: 18px; padding-top: 10px; }
+  .pc-card {
+    position: relative;
+    background: #fffdf7;
+    border-radius: 6px;
+    box-shadow: 0 6px 16px rgba(0,0,0,.08), 0 1px 2px rgba(0,0,0,.04);
+    padding: 16px 18px 14px;
+    border: 1px solid #f0e8d0;
+  }
+  .pc-card .washi {
+    position: absolute; top: -8px; left: 50%;
+    transform: translateX(-50%) rotate(-2deg);
+    width: 80px; height: 16px;
+    background: rgba(255,232,176,.92);
+    border: 1px solid rgba(0,0,0,.05);
+  }
+  .pc-card.tilt-l { transform: rotate(-1.5deg); }
+  .pc-card.tilt-r { transform: rotate(1deg); }
+  .pc-card .lbl { font-size: 10px; font-weight: 700; color: #888; letter-spacing: .12em; text-transform: uppercase; }
+  .pc-card .title { font-family: 'Georgia', serif; font-style: italic; font-size: 17px; color: #1a1a1a; margin: 4px 0 6px; }
+  .pc-card .body { font-size: 12px; color: #4a4a4a; line-height: 1.45; }
+  .pc-card .cta {
+    margin-top: 10px;
+    display: inline-flex; align-items: center; gap: 6px;
+    background: linear-gradient(135deg, #e58aaa, #c4a4e8);
+    color: #fff;
+    font-weight: 600;
+    font-size: 12px;
+    padding: 7px 14px;
+    border-radius: 999px;
+    box-shadow: 0 2px 4px rgba(0,0,0,.1);
+  }
+  .pc-card .price {
+    font-family: 'Georgia', serif; font-style: italic; font-weight: 700; color: #e85a82; font-size: 18px;
+  }
+  .pc-card .stamp {
+    position: absolute; top: 12px; right: 14px;
+    width: 32px; height: 36px;
+    background: linear-gradient(135deg, #fff5d8, #ffd166);
+    border: 1.5px dashed #fff;
+    color: #8a6a1c; font-size: 12px;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-weight: 700;
+    box-shadow: 0 1px 2px rgba(0,0,0,.1);
+  }
+  .pc-card .pin {
+    position: absolute; top: -4px; right: 16px;
+    width: 14px; height: 14px; border-radius: 50%;
+    background: radial-gradient(circle at 30% 30%, #f08a8a 0%, #c44a3a 60%, #8a2a1c 100%);
+    box-shadow: 0 1px 2px rgba(0,0,0,.3);
+  }
+
+  /* ====================================================== */
+  /* OPTION 2: STICKER SHEET — bold, illustrated, playful  */
+  /* ====================================================== */
+  .opt2 .right { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; padding-top: 10px; }
+  .opt2 .sticker {
+    position: relative;
+    background: #fff;
+    border-radius: 14px;
+    padding: 16px 14px 14px;
+    text-align: center;
+    border: 2px dashed transparent;
+    cursor: pointer;
+  }
+  .opt2 .sticker:hover { transform: translateY(-2px); }
+  .opt2 .sticker-postcard {
+    background: linear-gradient(135deg, #ffe0e8 0%, #ffc4d3 100%);
+    grid-column: 1 / 3;
+  }
+  .opt2 .sticker-rights {
+    background: linear-gradient(135deg, #fff5d8 0%, #ffe09e 100%);
+  }
+  .opt2 .sticker-collab {
+    background: linear-gradient(135deg, #ded6fb 0%, #b8a6ee 100%);
+  }
+  .opt2 .sticker-art {
+    width: 56px; height: 56px;
+    margin: 0 auto 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 30px;
+    border-radius: 50%;
+    background: rgba(255,255,255,.6);
+    box-shadow: inset 0 2px 4px rgba(255,255,255,.6), 0 2px 4px rgba(0,0,0,.05);
+  }
+  .opt2 .sticker-postcard .sticker-art { background: rgba(255,255,255,.7); }
+  .opt2 .sticker h4 { margin: 0 0 4px; font-size: 13px; font-weight: 700; color: #1a1a1a; }
+  .opt2 .sticker p { margin: 0; font-size: 11px; color: #5a5a5a; line-height: 1.4; }
+  .opt2 .sticker-cta {
+    margin-top: 10px;
+    display: inline-block;
+    background: rgba(255,255,255,.78);
+    color: #1a1a1a;
+    font-weight: 600;
+    font-size: 11px;
+    padding: 6px 12px;
+    border-radius: 999px;
+    border: 1px solid rgba(0,0,0,.06);
+  }
+  .opt2 .sticker-postcard .sticker-cta {
+    background: linear-gradient(135deg, #e85a82, #c4a4e8);
+    color: #fff;
+    border-color: transparent;
+  }
+
+  /* ====================================================== */
+  /* OPTION 3: MAGAZINE / VINTAGE NEWSPAPER STRIP            */
+  /* ====================================================== */
+  .opt3 .right { display: flex; flex-direction: column; gap: 0; padding-top: 4px; }
+  .mag-strip {
+    background: #fffefa;
+    border: 1px solid #d6c4a0;
+    padding: 14px 16px;
+    position: relative;
+  }
+  .mag-strip + .mag-strip { border-top: 0; }
+  .mag-strip:first-child { border-radius: 8px 8px 0 0; }
+  .mag-strip:last-child { border-radius: 0 0 8px 8px; }
+  .mag-strip .kicker {
+    color: #c89472; font-family: 'Georgia', serif; font-style: italic;
+    font-size: 11px; letter-spacing: .04em;
+    margin-bottom: 2px;
+  }
+  .mag-strip .head {
+    font-family: 'Georgia', serif; font-weight: 700;
+    color: #1a1a1a;
+    font-size: 18px;
+    line-height: 1.1;
+    margin: 0 0 6px;
+    letter-spacing: -0.01em;
+  }
+  .mag-strip .lede {
+    font-size: 12px; color: #5a5a5a; line-height: 1.45;
+    columns: 2; column-gap: 16px;
+    margin-bottom: 10px;
+  }
+  .mag-strip .lede.single { columns: 1; }
+  .mag-strip .cta-row {
+    display: flex; align-items: center; gap: 10px;
+  }
+  .mag-strip .cta {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: #1a1a1a; color: #fffefa;
+    padding: 7px 14px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+  }
+  .mag-strip .cta--ghost { background: transparent; color: #1a1a1a; border: 1px solid #1a1a1a; }
+  .mag-strip .stamp-badge {
+    display: inline-flex; align-items: center; justify-content: center;
+    border: 1.5px solid #c44a3a;
+    color: #c44a3a;
+    background: rgba(196, 74, 58, 0.06);
+    padding: 4px 10px;
+    border-radius: 4px;
+    font-family: 'Georgia', serif;
+    font-style: italic;
+    font-weight: 700;
+    font-size: 11px;
+    transform: rotate(-2deg);
+    margin-left: auto;
+  }
+  .mag-strip .price-row {
+    margin-top: 6px;
+    font-size: 11px;
+    color: #6b7280;
+  }
+  .mag-strip .price-row b { color: #c44a3a; font-family: 'Georgia', serif; font-size: 14px; font-style: italic; }
+</style>
+
+<div class="layout-grid">
+
+  <!-- ====================================================== -->
+  <!-- OPTION 1: POSTCARD STACK                                -->
+  <!-- ====================================================== -->
+  <div class="layout-option opt1" data-choice="postcard-stack" onclick="toggleSelect(this)">
+    <div class="layout-letter">1</div>
+    <h3 class="layout-title">Postcard stack</h3>
+    <p class="layout-desc">Each section is its own postcard-feel card — paper background, washi tape and pins, slight tilt. Reads like a scrapbook page; matches the Thank You aesthetic. <b>Tone:</b> handcrafted, warm, on-brand for the cute postcard.</p>
+    <div class="mock-modal">
+      <div class="mock-topbar">
+        <span class="avatar">J</span>
+        <div>
+          <div class="name">Julia Brandy8</div>
+          <div class="handle">@rmtfka · 3 posts</div>
+        </div>
+        <span class="x">×</span>
+      </div>
+      <div class="mock-body">
+        <div class="left">
+          <div class="mini-carousel">
+            <div class="mini-carousel-thumb">
+              <span class="platform">▶ Reel</span>
+              <div class="arrows">
+                <span class="arrow">‹</span>
+                <span class="arrow">›</span>
+              </div>
+              <div class="dots"><span></span><span class="on"></span><span></span></div>
+            </div>
+            <div class="mini-carousel-meta">
+              <div class="creator-name">Julia Brandy8</div>
+              <div class="count">Reel · 2 of 3 · 1mo ago</div>
+              <div class="caption">this way of thinking is what got me to quit my job, start my business, to have my circle of friends…</div>
+            </div>
+          </div>
+        </div>
+        <div class="right">
+          <div class="pc-card tilt-l">
+            <div class="washi"></div>
+            <div class="lbl">A little note</div>
+            <div class="title">Send a thank-you postcard</div>
+            <div class="body">Drop her a cutesy postcard. A signed, sealed digital note delivered to her inbox.</div>
+            <div class="cta">♥ Write postcard</div>
+          </div>
+
+          <div class="pc-card tilt-r">
+            <div class="stamp">$</div>
+            <div class="lbl">Content rights</div>
+            <div class="title">Organic <span style="color: #2c7a4a">✓</span> &nbsp;&middot;&nbsp; Paid? <span class="price">$200</span></div>
+            <div class="body">Organic rights are included with the campaign. Upgrade to boost this Reel as a paid ad — 30 days, all platforms.</div>
+            <div class="cta">Buy paid rights</div>
+          </div>
+
+          <div class="pc-card tilt-l">
+            <div class="pin"></div>
+            <div class="lbl">Re-collab</div>
+            <div class="title">Work with Julia again?</div>
+            <div class="body">Save her to your shortlist or send a heads-up about your next campaign.</div>
+            <div class="cta">+ Invite to next campaign</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ====================================================== -->
+  <!-- OPTION 2: STICKER SHEET                                 -->
+  <!-- ====================================================== -->
+  <div class="layout-option opt2" data-choice="sticker-sheet" onclick="toggleSelect(this)">
+    <div class="layout-letter">2</div>
+    <h3 class="layout-title">Sticker sheet</h3>
+    <p class="layout-desc">Bold pastel cards that read like stickers in a journal. Wide postcard tile up top, smaller rights + collab tiles below. <b>Tone:</b> playful, Gen-Z, lots of color. Postcard gets visual priority.</p>
+    <div class="mock-modal">
+      <div class="mock-topbar">
+        <span class="avatar">J</span>
+        <div>
+          <div class="name">Julia Brandy8</div>
+          <div class="handle">@rmtfka · 3 posts</div>
+        </div>
+        <span class="x">×</span>
+      </div>
+      <div class="mock-body">
+        <div class="left">
+          <div class="mini-carousel">
+            <div class="mini-carousel-thumb">
+              <span class="platform">▶ Reel</span>
+              <div class="arrows"><span class="arrow">‹</span><span class="arrow">›</span></div>
+              <div class="dots"><span></span><span class="on"></span><span></span></div>
+            </div>
+            <div class="mini-carousel-meta">
+              <div class="creator-name">Julia Brandy8</div>
+              <div class="count">Reel · 2 of 3 · 1mo ago</div>
+              <div class="caption">this way of thinking is what got me to quit my job, start my business, to have my circle of friends…</div>
+            </div>
+          </div>
+        </div>
+        <div class="right">
+          <div class="sticker sticker-postcard">
+            <div class="sticker-art">♥</div>
+            <h4>Send a thank-you postcard</h4>
+            <p>Drop a cutesy note in her inbox. Polaroid or vintage — your pick.</p>
+            <span class="sticker-cta">Write postcard →</span>
+          </div>
+
+          <div class="sticker sticker-rights">
+            <div class="sticker-art">⊛</div>
+            <h4>Content rights</h4>
+            <p><b>Organic ✓</b><br/>Paid use: <b>$200</b></p>
+            <span class="sticker-cta">Upgrade</span>
+          </div>
+
+          <div class="sticker sticker-collab">
+            <div class="sticker-art">＋</div>
+            <h4>Collab again?</h4>
+            <p>Save Julia for your next campaign.</p>
+            <span class="sticker-cta">Invite</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ====================================================== -->
+  <!-- OPTION 3: MAGAZINE STRIP                                -->
+  <!-- ====================================================== -->
+  <div class="layout-option opt3" data-choice="magazine" onclick="toggleSelect(this)">
+    <div class="layout-letter">3</div>
+    <h3 class="layout-title">Magazine strip</h3>
+    <p class="layout-desc">Editorial vibe — serif headlines, two-column lede, vintage stamp accents. Each section reads like a tiny column in a creator zine. <b>Tone:</b> sophisticated, brandable, fits "vintage × pastel" postcard aesthetic.</p>
+    <div class="mock-modal">
+      <div class="mock-topbar">
+        <span class="avatar">J</span>
+        <div>
+          <div class="name">Julia Brandy8</div>
+          <div class="handle">@rmtfka · 3 posts</div>
+        </div>
+        <span class="x">×</span>
+      </div>
+      <div class="mock-body">
+        <div class="left">
+          <div class="mini-carousel">
+            <div class="mini-carousel-thumb">
+              <span class="platform">▶ Reel</span>
+              <div class="arrows"><span class="arrow">‹</span><span class="arrow">›</span></div>
+              <div class="dots"><span></span><span class="on"></span><span></span></div>
+            </div>
+            <div class="mini-carousel-meta">
+              <div class="creator-name">Julia Brandy8</div>
+              <div class="count">Reel · 2 of 3 · 1mo ago</div>
+              <div class="caption">this way of thinking is what got me to quit my job, start my business, to have my circle of friends…</div>
+            </div>
+          </div>
+        </div>
+        <div class="right">
+          <div class="mag-strip">
+            <div class="kicker">Vol. 14 · postcards</div>
+            <h3 class="head">A note for Julia.</h3>
+            <p class="lede single">Send a handwritten thank-you. Polaroid or vintage style — she'll get it as a postcard with a heart-sealed envelope.</p>
+            <div class="cta-row">
+              <span class="cta">♥ Write postcard</span>
+            </div>
+          </div>
+          <div class="mag-strip">
+            <div class="kicker">Vol. 14 · rights</div>
+            <h3 class="head">Want to boost this?</h3>
+            <p class="lede">Organic use is granted with the campaign — share, repost, embed. To run it as a paid ad on Meta or TikTok, upgrade to paid rights for 30 days.</p>
+            <div class="cta-row">
+              <span class="cta">Buy paid rights</span>
+              <span class="stamp-badge">$200</span>
+            </div>
+          </div>
+          <div class="mag-strip">
+            <div class="kicker">Vol. 14 · re-collab</div>
+            <h3 class="head">Round two?</h3>
+            <p class="lede single">Save Julia to your shortlist or send her a heads-up about your next campaign.</p>
+            <div class="cta-row">
+              <span class="cta cta--ghost">+ Invite to next campaign</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<p style="margin-top:28px;font-size:13px;color:#6b7280">Pick one, or mix elements between them ("the sticker grid but with the magazine kicker text"). I can also keep going if none feels right.</p>

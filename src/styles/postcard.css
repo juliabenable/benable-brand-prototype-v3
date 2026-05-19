@@ -641,8 +641,10 @@
 }
 .hub-modal {
   width: 100%;
-  max-width: 920px;
-  max-height: 88vh;
+  max-width: 1120px;
+  /* Stable height — the modal does NOT resize with caption length.
+     Long captions scroll inside the carousel column instead. */
+  height: min(700px, 90vh);
   background: linear-gradient(180deg, #fdfcfb 0%, #faf6ef 100%);
   border-radius: 18px;
   box-shadow: 0 24px 60px rgba(17, 24, 39, 0.28);
@@ -676,22 +678,26 @@
 
 .hub-body {
   display: grid;
-  grid-template-columns: 260px 1fr;
+  grid-template-columns: 380px 1fr;
   gap: 0;
   flex: 1;
   min-height: 0;
 }
 
-/* Left: carousel */
+/* Left: carousel — fixed layout; the caption (not the modal) scrolls */
 .hub-carousel {
   border-right: 1px solid #ebebeb;
   padding: 22px;
-  overflow-y: auto;
   background: #fff;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
 }
 .hub-carousel__thumb {
   width: 100%;
   aspect-ratio: 4 / 5;
+  max-height: 400px;
+  flex-shrink: 0;
   border-radius: 12px;
   background: linear-gradient(135deg, #3a2f44, #5d4a6b 40%, #c89472);
   background-size: cover;
@@ -728,17 +734,31 @@
   background: rgba(255,255,255,.45);
 }
 .hub-carousel__dots span.on { background: #fff; }
-.hub-carousel__meta { padding-top: 14px; }
+.hub-carousel__meta {
+  padding-top: 14px;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
 .hub-carousel__count {
   font-size: 11px; color: #9ca3af; font-weight: 600;
   text-transform: uppercase; letter-spacing: .04em;
   margin-bottom: 6px;
+  flex-shrink: 0;
 }
 .hub-carousel__caption {
-  font-size: 13px; color: #4a4a4a; line-height: 1.5; margin: 0 0 10px;
+  font-size: 13px; color: #4a4a4a; line-height: 1.5;
+  margin: 0 0 10px;
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  /* subtle scroll affordance */
+  scrollbar-width: thin;
 }
 .hub-carousel__link {
   font-size: 12px; color: #7a5cfa; font-weight: 600;
+  flex-shrink: 0;
 }
 
 /* Right: tabs + panel */
@@ -982,10 +1002,13 @@
   .pc-vintage__body-sig { font-size: 13px; }
 
   .hub-overlay { padding: 0; }
-  .hub-modal { max-width: 100%; max-height: 100vh; height: 100vh; border-radius: 0; }
+  .hub-modal { max-width: 100%; height: 100vh; border-radius: 0; }
   .hub-body { grid-template-columns: 1fr; overflow-y: auto; }
   .hub-carousel { border-right: 0; border-bottom: 1px solid #ebebeb; }
-  .hub-carousel__thumb { max-width: 220px; margin: 0 auto; }
+  .hub-carousel__thumb { max-width: 240px; max-height: none; margin: 0 auto; }
+  /* On mobile the whole body scrolls — let the caption flow naturally. */
+  .hub-carousel__meta { display: block; flex: none; }
+  .hub-carousel__caption { overflow: visible; flex: none; min-height: 0; }
   .hub-postcard { grid-template-columns: 1fr; }
   .hub-postcard__preview { order: -1; transform: scale(.8); }
 }

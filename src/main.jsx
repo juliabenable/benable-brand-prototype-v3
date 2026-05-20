@@ -5,6 +5,7 @@ import App from './App.jsx';
 import './styles/production.css';
 import './styles/overrides.css';
 import './styles/postcard.css';
+import './styles/dashboard-v2.css';
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
